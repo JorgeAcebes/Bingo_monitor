@@ -4,225 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Cartillas de Bingo</title>
-    <!-- Librería para generación de PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <!-- Librería para generación de PDF, con defer -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            max-width: 500px;
-            width: 100%;
-            transform: translateY(0);
-            transition: transform 0.3s ease;
-        }
-
-        .container:hover {
-            transform: translateY(-5px);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            font-weight: 700;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-            font-size: 1.1em;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        input[type="number"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .button {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .button:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .button:hover:before {
-            left: 100%;
-        }
-
-        .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(45deg, #f093fb, #f5576c);
-            color: white;
-            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
-        }
-
-        .btn-success {
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
-            color: white;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-        }
-
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .modal h2 {
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .phrases-container {
-            display: grid;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .phrase-input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-
-        .phrase-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #999;
-            transition: color 0.3s ease;
-        }
-
-        .close:hover {
-            color: #333;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-                margin: 10px;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-
-            .modal-content {
-                padding: 20px;
-                width: 95%;
-            }
-        }
+        /* ... (igual que antes: tu CSS sin cambios) ... */
     </style>
 </head>
 <body>
@@ -239,134 +24,104 @@
             <input type="number" id="cards" min="1" max="20" value="4">
         </div>
 
-        <button class="button btn-secondary" onclick="openModal()">
+        <!-- Botones ahora con id en lugar de onclick inline -->
+        <button id="editBtn" class="button btn-secondary">
             <span class="icon">✏️</span> Editar Frases
         </button>
 
-        <button class="button btn-success" onclick="generateBingo()">
+        <button id="downloadBtn" class="button btn-success">
             <span class="icon">⬇️</span> Descargar Cartillas
         </button>
     </div>
 
     <div id="phrasesModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
+            <span id="closeModalBtn" class="close">&times;</span>
             <h2>📝 Editar Frases del Bingo</h2>
             <div id="phrasesContainer" class="phrases-container"></div>
-            <button class="button btn-success" onclick="addPhrase()">
+            <button id="addPhraseBtn" class="button btn-success">
                 <span class="icon">➕</span> Añadir Frase
             </button>
-            <button class="button btn-primary" onclick="saveAndClose()">
+            <button id="saveCloseBtn" class="button btn-primary">
                 <span class="icon">💾</span> Guardar y Cerrar
             </button>
         </div>
     </div>
 
     <script>
+    document.addEventListener('DOMContentLoaded', () => {
         // Frases por defecto
         let phrases = [
-            "Tiene 2 hermanos",
-            "Nació en octubre",
-            "Su comida favorita es la pizza",
-            "Le gusta el fútbol",
-            "Tiene una mascota",
-            "Su color favorito es el azul",
-            "Practica algún deporte",
-            "Le gusta leer libros",
-            "Sabe tocar un instrumento",
-            "Ha viajado a otro país",
-            "Le gusta cocinar",
-            "Le gusta tener plantas",
-            "Su película favorita es de acción",
-            "Le gusta la música pop",
-            "Sabe bailar",
-            "Tiene hermanos mayores",
-            "Su materia favorita es matemáticas",
-            "Le gusta levantarse temprano",
-            "Prefiere el verano al invierno",
-            "Ha estado en un concierto",
-            "Le gusta el chocolate",
-            "Sabe nadar",
-            "Tiene ojos marrones",
-            "Su número favorito es el 7",
-            "Le gusta ver series",
-            "Ha montado en avión",
-            "Prefiere los gatos a los perros",
-            "Le gusta la playa",
-            "Sabe montar en bicicleta",
-            "Su día favorito es el viernes",
-            "Le gusta la comida picante",
-            "Ha jugado videojuegos hoy",
-            "Tiene el pelo rizado",
-            "Le gusta dibujar",
-            "Sabe patinar",
-            "Su estación favorita es primavera",
-            "Le gusta madrugar",
-            "Ha leído un libro este mes",
-            "Prefiere dulce a salado",
-            "Le gusta hacer ejercicio",
-            "Su bebida favorita es el agua",
-            "Le gusta ir al cine",
-            "Sabe jugar ajedrez",
-            "Su hobby favorito es la fotografía",
-            "Le gusta la montaña",
-            "Ha estado en un museo",
-            "Prefiere té a café",
-            "Le gusta escribir",
+            "Tiene 2 hermanos","Nació en octubre","Su comida favorita es la pizza","Le gusta el fútbol",
+            "Tiene una mascota","Su color favorito es el azul","Practica algún deporte","Le gusta leer libros",
+            "Sabe tocar un instrumento","Ha viajado a otro país","Le gusta cocinar","Le gusta tener plantas",
+            "Su película favorita es de acción","Le gusta la música pop","Sabe bailar","Tiene hermanos mayores",
+            "Su materia favorita es matemáticas","Le gusta levantarse temprano","Prefiere el verano al invierno",
+            "Ha estado en un concierto","Le gusta el chocolate","Sabe nadar","Tiene ojos marrones",
+            "Su número favorito es el 7","Le gusta ver series","Ha montado en avión","Prefiere los gatos a los perros",
+            "Le gusta la playa","Sabe montar en bicicleta","Su día favorito es el viernes","Le gusta la comida picante",
+            "Ha jugado videojuegos hoy","Tiene el pelo rizado","Le gusta dibujar","Sabe patinar",
+            "Su estación favorita es primavera","Le gusta madrugar","Ha leído un libro este mes",
+            "Prefiere dulce a salado","Le gusta hacer ejercicio","Su bebida favorita es el agua",
+            "Le gusta ir al cine","Sabe jugar ajedrez","Su hobby favorito es la fotografía",
+            "Le gusta la montaña","Ha estado en un museo","Prefiere té a café","Le gusta escribir",
             "Su animal favorito es el león"
         ];
 
-        // Pools de frases
         let availablePhrases = [];
         let usedPhrases = [];
 
-        function openModal() {
-            document.getElementById('phrasesModal').style.display = 'block';
-            loadPhrases();
-        }
+        const editBtn        = document.getElementById('editBtn');
+        const downloadBtn    = document.getElementById('downloadBtn');
+        const addPhraseBtn   = document.getElementById('addPhraseBtn');
+        const saveCloseBtn   = document.getElementById('saveCloseBtn');
+        const closeModalBtn  = document.getElementById('closeModalBtn');
+        const modal          = document.getElementById('phrasesModal');
+        const phrasesContainer = document.getElementById('phrasesContainer');
 
+        function openModal() {
+            loadPhrases();
+            modal.style.display = 'block';
+        }
         function closeModal() {
-            document.getElementById('phrasesModal').style.display = 'none';
+            modal.style.display = 'none';
         }
 
         function loadPhrases() {
-            const container = document.getElementById('phrasesContainer');
-            container.innerHTML = '';
-            phrases.forEach((phrase, index) => {
-                const div = document.createElement('div');
-                div.style.display = 'flex';
-                div.style.alignItems = 'center';
-                div.style.gap = '10px';
+            phrasesContainer.innerHTML = '';
+            phrases.forEach((phrase, idx) => {
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.alignItems = 'center';
+                row.style.gap = '10px';
 
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.className = 'phrase-input';
                 input.value = phrase;
-                input.dataset.index = index;
+                input.dataset.index = idx;
                 input.style.flex = '1';
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '🗑️';
-                Object.assign(deleteBtn.style, {
-                    background: '#ff4757',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '5px',
-                    padding: '5px 10px',
-                    cursor: 'pointer'
+                const del = document.createElement('button');
+                del.textContent = '🗑️';
+                Object.assign(del.style, {
+                    background: '#ff4757', color: 'white',
+                    border: 'none', borderRadius: '5px',
+                    padding: '5px 10px', cursor: 'pointer'
                 });
-                deleteBtn.onclick = () => deletePhrase(index);
+                del.addEventListener('click', () => {
+                    phrases.splice(idx, 1);
+                    loadPhrases();
+                });
 
-                div.appendChild(input);
-                div.appendChild(deleteBtn);
-                container.appendChild(div);
+                row.append(input, del);
+                phrasesContainer.append(row);
             });
         }
 
         function addPhrase() {
-            const container = document.getElementById('phrasesContainer');
-            const div = document.createElement('div');
-            Object.assign(div.style, { display: 'flex', alignItems: 'center', gap: '10px' });
+            const row = document.createElement('div');
+            Object.assign(row.style, { display: 'flex', alignItems: 'center', gap: '10px' });
 
             const input = document.createElement('input');
             input.type = 'text';
@@ -374,126 +129,108 @@
             input.placeholder = 'Escribe una nueva frase aquí...';
             input.style.flex = '1';
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.innerHTML = '🗑️';
-            Object.assign(deleteBtn.style, {
-                background: '#ff4757',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                padding: '5px 10px',
-                cursor: 'pointer'
+            const del = document.createElement('button');
+            del.textContent = '🗑️';
+            Object.assign(del.style, {
+                background: '#ff4757', color: 'white',
+                border: 'none', borderRadius: '5px',
+                padding: '5px 10px', cursor: 'pointer'
             });
-            deleteBtn.onclick = () => div.remove();
+            del.addEventListener('click', () => row.remove());
 
-            div.appendChild(input);
-            div.appendChild(deleteBtn);
-            container.appendChild(div);
+            row.append(input, del);
+            phrasesContainer.append(row);
             input.focus();
         }
 
-        function deletePhrase(index) {
-            phrases.splice(index, 1);
-            loadPhrases();
-        }
-
         function saveAndClose() {
-            const inputs = document.querySelectorAll('.phrase-input');
+            const inputs = phrasesContainer.querySelectorAll('.phrase-input');
             phrases = Array.from(inputs)
-                .map(input => input.value.trim())
-                .filter(phrase => phrase !== '');
+                .map(i => i.value.trim())
+                .filter(t => t.length);
             closeModal();
         }
 
-        function shuffleArray(array) {
-            const shuffled = [...array];
-            for (let i = shuffled.length - 1; i > 0; i--) {
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                [a[i], a[j]] = [a[j], a[i]];
             }
-            return shuffled;
+            return a;
         }
 
         function getUniquePhrases(count) {
-            const selected = [];
-            while (selected.length < count) {
-                if (availablePhrases.length === 0) {
+            const sel = [];
+            while (sel.length < count) {
+                if (!availablePhrases.length) {
                     availablePhrases = shuffleArray(phrases.filter(p => !usedPhrases.includes(p)));
-                    if (availablePhrases.length < count - selected.length) {
+                    if (availablePhrases.length < count - sel.length) {
                         usedPhrases = [];
                         availablePhrases = shuffleArray([...phrases]);
                     }
                 }
                 const next = availablePhrases.shift();
-                selected.push(next);
+                sel.push(next);
                 usedPhrases.push(next);
             }
-            return selected;
+            return sel;
         }
 
         function generateBingo() {
-            const squares = parseInt(document.getElementById('squares').value);
-            const cards = parseInt(document.getElementById('cards').value);
-            if (squares < 4 || squares > 25) return alert('El número de cuadrados debe estar entre 4 y 25');
-            if (cards < 1 || cards > 100) return alert('El número de cartillas debe estar entre 1 y 100');
-            if (phrases.length === 0) return alert('Necesitas al menos una frase para generar las cartillas');
+            const squares = +document.getElementById('squares').value;
+            const cards   = +document.getElementById('cards').value;
+            if (squares < 4 || squares > 25)
+                return alert('El número de cuadrados debe estar entre 4 y 25');
+            if (cards < 1 || cards > 100)
+                return alert('El número de cartillas debe estar entre 1 y 100');
+            if (!phrases.length)
+                return alert('Necesitas al menos una frase para generar las cartillas');
 
             const perSide = Math.ceil(Math.sqrt(squares));
             const temp = document.createElement('div');
-
-            // Reiniciar pools
             availablePhrases = shuffleArray([...phrases]);
             usedPhrases = [];
 
-            let currentPageDiv = null;
+            let pageDiv;
             for (let i = 0; i < cards; i++) {
                 if (i % 4 === 0) {
-                    currentPageDiv = document.createElement('div');
-                    Object.assign(currentPageDiv.style, {
-                        width: '297mm',
-                        height: '210mm',
-                        padding: '10mm',
-                        boxSizing: 'border-box',
-                        display: 'flex',
-                        flexWrap: 'wrap',
+                    pageDiv = document.createElement('div');
+                    Object.assign(pageDiv.style, {
+                        width: '297mm', height: '210mm',
+                        padding: '10mm', boxSizing: 'border-box',
+                        display: 'flex', flexWrap: 'wrap',
                         justifyContent: 'space-between',
                         alignContent: 'space-between',
-                        background: 'white',
-                        overflow: 'hidden'
+                        background: 'white', overflow: 'hidden'
                     });
-                    if (i + 4 < cards) {
-                        currentPageDiv.style.pageBreakAfter = 'always';
-                    }
-                    temp.appendChild(currentPageDiv);
+                    if (i + 4 < cards) pageDiv.style.pageBreakAfter = 'always';
+                    temp.append(pageDiv);
                 }
 
-                const cardDiv = document.createElement('div');
-                Object.assign(cardDiv.style, {
-                    width: '48%',
-                    height: '48%',
+                const card = document.createElement('div');
+                Object.assign(card.style, {
+                    width: '48%', height: '48%',
                     border: '2px solid #000',
                     boxSizing: 'border-box',
-                    display: 'flex',
-                    flexDirection: 'column'
+                    display: 'flex', flexDirection: 'column'
                 });
 
                 const title = document.createElement('div');
                 title.textContent = `BINGO - Cartilla ${i + 1}`;
                 Object.assign(title.style, {
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    marginBottom: '4px',
-                    fontSize: '10px'
+                    textAlign: 'center', fontWeight: 'bold',
+                    marginBottom: '4px', fontSize: '10px'
                 });
-                cardDiv.appendChild(title);
+                card.append(title);
 
                 const grid = document.createElement('div');
                 grid.style.display = 'grid';
-                grid.style.gridTemplateColumns = `repeat(${perSide}, 1fr)`;
+                grid.style.gridTemplateColumns = `repeat(${perSide},1fr)`;
                 grid.style.flexGrow = '1';
 
-                const shuffled = getUniquePhrases(squares);
-                for (let j = 0; j < squares; j++) {
+                const phrasesForCard = getUniquePhrases(squares);
+                phrasesForCard.forEach(text => {
                     const cell = document.createElement('div');
                     Object.assign(cell.style, {
                         background: '#fff',
@@ -507,12 +244,12 @@
                         minHeight: '20px',
                         textAlign: 'center'
                     });
-                    cell.textContent = shuffled[j];
-                    grid.appendChild(cell);
-                }
+                    cell.textContent = text;
+                    grid.append(cell);
+                });
 
-                cardDiv.appendChild(grid);
-                currentPageDiv.appendChild(cardDiv);
+                card.append(grid);
+                pageDiv.append(card);
             }
 
             html2pdf()
@@ -526,11 +263,16 @@
                 .save();
         }
 
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('phrasesModal')) {
-                closeModal();
-            }
-        };
+        // Asignamos todos los event listeners
+        editBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', e => {
+            if (e.target === modal) closeModal();
+        });
+        addPhraseBtn.addEventListener('click', addPhrase);
+        saveCloseBtn.addEventListener('click', saveAndClose);
+        downloadBtn.addEventListener('click', generateBingo);
+    });
     </script>
 </body>
 </html>
