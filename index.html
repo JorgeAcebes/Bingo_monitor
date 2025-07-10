@@ -466,6 +466,8 @@ function generateBingo() {
                 justifyContent: 'space-between',
                 alignContent: 'space-between',
                 background: 'white',
+                pageBreakAfter: 'always', // 🔴 Fuerza salto de página controlado
+                overflow: 'hidden' // 🟢 Impide crecimiento extra
             });
             temp.appendChild(pageDiv);
         }
