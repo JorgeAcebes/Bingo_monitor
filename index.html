@@ -410,6 +410,18 @@
             return shuffled;
         }
 
+        let availablePhrases = [];
+
+function getUniquePhrases(count) {
+    if (availablePhrases.length < count) {
+        availablePhrases = shuffleArray(phrases);
+    }
+
+    const selected = availablePhrases.slice(0, count);
+    availablePhrases = availablePhrases.slice(count);
+    return selected;
+}
+
 function generateBingo() {
     const squares = parseInt(document.getElementById('squares').value);
     const cards = parseInt(document.getElementById('cards').value);
@@ -420,10 +432,11 @@ function generateBingo() {
     const perSide = Math.ceil(Math.sqrt(squares));
     const temp = document.createElement('div'); // contenedor general
 
+    availablePhrases = shuffleArray(phrases); // reiniciar el conjunto disponible
+
     let pageDiv = null;
 
     for (let i = 0; i < cards; i++) {
-        // Si es la primera cartilla o cada 4 cartillas, crea nueva página
         if (i % 4 === 0) {
             pageDiv = document.createElement('div');
             Object.assign(pageDiv.style, {
@@ -434,8 +447,9 @@ function generateBingo() {
                 display: 'flex',
                 flexWrap: 'wrap',
                 justifyContent: 'space-between',
+                alignContent: 'space-between',
                 background: 'white',
-       
+                pageBreakAfter: 'always'
             });
             temp.appendChild(pageDiv);
         }
@@ -446,7 +460,6 @@ function generateBingo() {
             height: '48%',
             border: '2px solid #000',
             boxSizing: 'border-box',
-            marginBottom: '1%',
             display: 'flex',
             flexDirection: 'column'
         });
@@ -467,7 +480,7 @@ function generateBingo() {
         grid.style.flexGrow = '1';
         grid.style.background = '#000';
 
-        const shuffled = shuffleArray(phrases).slice(0, squares); // solo frases necesarias
+        const shuffled = getUniquePhrases(squares);
 
         for (let j = 0; j < squares; j++) {
             const cell = document.createElement('div');
@@ -501,6 +514,7 @@ function generateBingo() {
         .from(temp)
         .save();
 }
+
         window.onclick = function(event) {
             if (event.target === document.getElementById('phrasesModal')) {
                 closeModal();
