@@ -223,6 +223,34 @@
                 width: 95%;
             }
         }
+
+        /* Estilos para PDF sin espacios entre páginas */
+        .pdf-container {
+            margin: 0;
+            padding: 0;
+        }
+
+        .pdf-page {
+            width: 297mm;
+            height: 210mm;
+            padding: 10mm;
+            box-sizing: border-box;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-content: space-between;
+            background: white;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .pdf-page:not(:last-child) {
+            page-break-after: avoid;
+        }
+
+        @page {
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -282,8 +310,9 @@
             "Su animal favorito es el león"
         ];
 
-        let availablePhrases = [];
-        let usedPhrases = [];
+        // Variables para el control de frases únicas
+        let phrasesPool = [];
+        let currentPhraseIndex = 0;
 
         const editBtn        = document.getElementById('editBtn');
         const downloadBtn    = document.getElementById('downloadBtn');
@@ -374,21 +403,25 @@
             return a;
         }
 
-        function getUniquePhrases(count) {
-            const sel = [];
-            while (sel.length < count) {
-                if (!availablePhrases.length) {
-                    availablePhrases = shuffleArray(phrases.filter(p => !usedPhrases.includes(p)));
-                    if (availablePhrases.length < count - sel.length) {
-                        usedPhrases = [];
-                        availablePhrases = shuffleArray([...phrases]);
-                    }
-                }
-                const next = availablePhrases.shift();
-                sel.push(next);
-                usedPhrases.push(next);
+        // Nueva función para obtener frases únicas sin repetición
+        function getNextPhrase() {
+            // Si el pool está vacío o hemos usado todas las frases, crear un nuevo pool barajado
+            if (phrasesPool.length === 0 || currentPhraseIndex >= phrasesPool.length) {
+                phrasesPool = shuffleArray([...phrases]);
+                currentPhraseIndex = 0;
             }
-            return sel;
+            
+            const phrase = phrasesPool[currentPhraseIndex];
+            currentPhraseIndex++;
+            return phrase;
+        }
+
+        function getUniquePhrases(count) {
+            const selectedPhrases = [];
+            for (let i = 0; i < count; i++) {
+                selectedPhrases.push(getNextPhrase());
+            }
+            return selectedPhrases;
         }
 
         function generateBingo() {
@@ -403,22 +436,17 @@
 
             const perSide = Math.ceil(Math.sqrt(squares));
             const temp = document.createElement('div');
-            availablePhrases = shuffleArray([...phrases]);
-            usedPhrases = [];
+            temp.className = 'pdf-container';
+            
+            // Reiniciar el sistema de frases únicas
+            phrasesPool = [];
+            currentPhraseIndex = 0;
 
             let pageDiv;
             for (let i = 0; i < cards; i++) {
                 if (i % 4 === 0) {
                     pageDiv = document.createElement('div');
-                    Object.assign(pageDiv.style, {
-                        width: '297mm', height: '210mm',
-                        padding: '10mm', boxSizing: 'border-box',
-                        display: 'flex', flexWrap: 'wrap',
-                        justifyContent: 'space-between',
-                        alignContent: 'space-between',
-                        background: 'white', overflow: 'hidden'
-                    });
-                    if (i + 4 < cards) pageDiv.style.pageBreakAfter = 'always';
+                    pageDiv.className = 'pdf-page';
                     temp.append(pageDiv);
                 }
 
@@ -427,7 +455,8 @@
                     width: '48%', height: '48%',
                     border: '2px solid #000',
                     boxSizing: 'border-box',
-                    display: 'flex', flexDirection: 'column'
+                    display: 'flex', flexDirection: 'column',
+                    margin: '0'
                 });
 
                 const title = document.createElement('div');
@@ -442,6 +471,7 @@
                 grid.style.display = 'grid';
                 grid.style.gridTemplateColumns = `repeat(${perSide},1fr)`;
                 grid.style.flexGrow = '1';
+                grid.style.gap = '0';
 
                 const phrasesForCard = getUniquePhrases(squares);
                 phrasesForCard.forEach(text => {
@@ -456,7 +486,8 @@
                         padding: '2px',
                         wordWrap: 'break-word',
                         minHeight: '20px',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        margin: '0'
                     });
                     cell.textContent = text;
                     grid.append(cell);
@@ -470,8 +501,17 @@
                 .set({
                     margin: 0,
                     filename: 'cartillas-bingo.pdf',
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                    html2canvas: { 
+                        scale: 2,
+                        useCORS: true,
+                        letterRendering: true
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'landscape',
+                        compress: true
+                    }
                 })
                 .from(temp)
                 .save();
