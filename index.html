@@ -426,7 +426,7 @@ function generateBingo() {
     const squares = parseInt(document.getElementById('squares').value);
     const cards = parseInt(document.getElementById('cards').value);
     if (squares < 4 || squares > 25) return alert('El número de cuadrados debe estar entre 4 y 25');
-    if (cards < 1 || cards > 40) return alert('El número de cartillas debe estar entre 1 y 40');
+    if (cards < 1 || cards > 100) return alert('El número de cartillas debe estar entre 1 y 100');
     if (phrases.length === 0) return alert('Necesitas al menos una frase para generar las cartillas');
 
     const perSide = Math.ceil(Math.sqrt(squares));
