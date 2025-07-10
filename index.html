@@ -240,11 +240,11 @@
         </div>
 
         <button class="button btn-secondary" onclick="openModal()">
-            <span class="icon">✏️</span>Editar Frases
+            <span class="icon">✏️</span> Editar Frases
         </button>
 
         <button class="button btn-success" onclick="generateBingo()">
-            <span class="icon">⬇️</span>Descargar Cartillas
+            <span class="icon">⬇️</span> Descargar Cartillas
         </button>
     </div>
 
@@ -254,10 +254,10 @@
             <h2>📝 Editar Frases del Bingo</h2>
             <div id="phrasesContainer" class="phrases-container"></div>
             <button class="button btn-success" onclick="addPhrase()">
-                <span class="icon">➕</span>Añadir Frase
+                <span class="icon">➕</span> Añadir Frase
             </button>
             <button class="button btn-primary" onclick="saveAndClose()">
-                <span class="icon">💾</span>Guardar y Cerrar
+                <span class="icon">💾</span> Guardar y Cerrar
             </button>
         </div>
     </div>
@@ -315,6 +315,10 @@
             "Le gusta escribir",
             "Su animal favorito es el león"
         ];
+
+        // Pools de frases
+        let availablePhrases = [];
+        let usedPhrases = [];
 
         function openModal() {
             document.getElementById('phrasesModal').style.display = 'block';
@@ -410,134 +414,123 @@
             return shuffled;
         }
 
-        let availablePhrases = [];
-        
-let availablePhrases = [];
-let usedPhrases = [];
-
-function getUniquePhrases(count) {
-    const selected = [];
-
-    while (selected.length < count) {
-        // Si no quedan frases disponibles, reiniciar (después de haber usado todas)
-        if (availablePhrases.length === 0) {
-            availablePhrases = shuffleArray(phrases.filter(p => !usedPhrases.includes(p)));
-            
-            // Si aún no hay suficientes, significa que ya usamos todas: reiniciar todo
-            if (availablePhrases.length < count - selected.length) {
-                usedPhrases = [];
-                availablePhrases = shuffleArray([...phrases]);
+        function getUniquePhrases(count) {
+            const selected = [];
+            while (selected.length < count) {
+                if (availablePhrases.length === 0) {
+                    availablePhrases = shuffleArray(phrases.filter(p => !usedPhrases.includes(p)));
+                    if (availablePhrases.length < count - selected.length) {
+                        usedPhrases = [];
+                        availablePhrases = shuffleArray([...phrases]);
+                    }
+                }
+                const next = availablePhrases.shift();
+                selected.push(next);
+                usedPhrases.push(next);
             }
+            return selected;
         }
 
-        const nextPhrase = availablePhrases.shift();
-        selected.push(nextPhrase);
-        usedPhrases.push(nextPhrase);
-    }
+        function generateBingo() {
+            const squares = parseInt(document.getElementById('squares').value);
+            const cards = parseInt(document.getElementById('cards').value);
+            if (squares < 4 || squares > 25) return alert('El número de cuadrados debe estar entre 4 y 25');
+            if (cards < 1 || cards > 100) return alert('El número de cartillas debe estar entre 1 y 100');
+            if (phrases.length === 0) return alert('Necesitas al menos una frase para generar las cartillas');
 
-    return selected;
-}
+            const perSide = Math.ceil(Math.sqrt(squares));
+            const temp = document.createElement('div');
 
+            // Reiniciar pools
+            availablePhrases = shuffleArray([...phrases]);
+            usedPhrases = [];
 
-function generateBingo() {
-    const squares = parseInt(document.getElementById('squares').value);
-    const cards = parseInt(document.getElementById('cards').value);
-    if (squares < 4 || squares > 25) return alert('El número de cuadrados debe estar entre 4 y 25');
-    if (cards < 1 || cards > 100) return alert('El número de cartillas debe estar entre 1 y 100');
-    if (phrases.length === 0) return alert('Necesitas al menos una frase para generar las cartillas');
+            let currentPageDiv = null;
+            for (let i = 0; i < cards; i++) {
+                if (i % 4 === 0) {
+                    currentPageDiv = document.createElement('div');
+                    Object.assign(currentPageDiv.style, {
+                        width: '297mm',
+                        height: '210mm',
+                        padding: '10mm',
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'space-between',
+                        alignContent: 'space-between',
+                        background: 'white',
+                        overflow: 'hidden'
+                    });
+                    if (i + 4 < cards) {
+                        currentPageDiv.style.pageBreakAfter = 'always';
+                    }
+                    temp.appendChild(currentPageDiv);
+                }
 
-    const perSide = Math.ceil(Math.sqrt(squares));
-    const temp = document.createElement('div'); // contenedor general
+                const cardDiv = document.createElement('div');
+                Object.assign(cardDiv.style, {
+                    width: '48%',
+                    height: '48%',
+                    border: '2px solid #000',
+                    boxSizing: 'border-box',
+                    display: 'flex',
+                    flexDirection: 'column'
+                });
 
-    availablePhrases = shuffleArray(phrases); // reiniciar el conjunto disponible
+                const title = document.createElement('div');
+                title.textContent = `BINGO - Cartilla ${i + 1}`;
+                Object.assign(title.style, {
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    marginBottom: '4px',
+                    fontSize: '10px'
+                });
+                cardDiv.appendChild(title);
 
-    let pageDiv = null;
+                const grid = document.createElement('div');
+                grid.style.display = 'grid';
+                grid.style.gridTemplateColumns = `repeat(${perSide}, 1fr)`;
+                grid.style.flexGrow = '1';
 
-    for (let i = 0; i < cards; i++) {
-        if (i % 4 === 0) {
-            pageDiv = document.createElement('div');
-            Object.assign(pageDiv.style, {
-                width: '297mm',
-                height: '210mm',
-                padding: '10mm',
-                boxSizing: 'border-box',
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'space-between',
-                alignContent: 'space-between',
-                background: 'white',
-                pageBreakAfter: 'always', // 🔴 Fuerza salto de página controlado
-                overflow: 'hidden' // 🟢 Impide crecimiento extra
-            });
-            temp.appendChild(pageDiv);
+                const shuffled = getUniquePhrases(squares);
+                for (let j = 0; j < squares; j++) {
+                    const cell = document.createElement('div');
+                    Object.assign(cell.style, {
+                        background: '#fff',
+                        border: '1px solid #000',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        padding: '2px',
+                        wordWrap: 'break-word',
+                        minHeight: '20px',
+                        textAlign: 'center'
+                    });
+                    cell.textContent = shuffled[j];
+                    grid.appendChild(cell);
+                }
+
+                cardDiv.appendChild(grid);
+                currentPageDiv.appendChild(cardDiv);
+            }
+
+            html2pdf()
+                .set({
+                    margin: 0,
+                    filename: 'cartillas-bingo.pdf',
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                })
+                .from(temp)
+                .save();
         }
-
-        const cardDiv = document.createElement('div');
-        Object.assign(cardDiv.style, {
-            width: '48%',
-            height: '48%',
-            border: '2px solid #000',
-            boxSizing: 'border-box',
-            display: 'flex',
-            flexDirection: 'column'
-        });
-
-        const title = document.createElement('div');
-        title.textContent = `BINGO - Cartilla ${i + 1}`;
-        Object.assign(title.style, {
-            textAlign: 'center',
-            fontWeight: 'bold',
-            marginBottom: '4px',
-            fontSize: '10px'
-        });
-        cardDiv.appendChild(title);
-
-        const grid = document.createElement('div');
-        grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = `repeat(${perSide}, 1fr)`;
-        grid.style.flexGrow = '1';
-        grid.style.background = '#000';
-
-        const shuffled = getUniquePhrases(squares);
-
-        for (let j = 0; j < squares; j++) {
-            const cell = document.createElement('div');
-            Object.assign(cell.style, {
-                background: '#fff',
-                border: '1px solid #000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px',
-                padding: '2px',
-                wordWrap: 'break-word',
-                minHeight: '20px',
-                textAlign: 'center'
-            });
-            cell.textContent = shuffled[j];
-            grid.appendChild(cell);
-        }
-
-        cardDiv.appendChild(grid);
-        pageDiv.appendChild(cardDiv);
-    }
-
-    html2pdf()
-        .set({
-            margin: 0,
-            filename: 'cartillas-bingo.pdf',
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        })
-        .from(temp)
-        .save();
-}
 
         window.onclick = function(event) {
             if (event.target === document.getElementById('phrasesModal')) {
                 closeModal();
             }
-        }
+        };
     </script>
 </body>
 </html>
