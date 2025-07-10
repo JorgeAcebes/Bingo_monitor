@@ -411,16 +411,33 @@
         }
 
         let availablePhrases = [];
+        
+let availablePhrases = [];
+let usedPhrases = [];
 
 function getUniquePhrases(count) {
-    if (availablePhrases.length < count) {
-        availablePhrases = shuffleArray(phrases);
+    const selected = [];
+
+    while (selected.length < count) {
+        // Si no quedan frases disponibles, reiniciar (después de haber usado todas)
+        if (availablePhrases.length === 0) {
+            availablePhrases = shuffleArray(phrases.filter(p => !usedPhrases.includes(p)));
+            
+            // Si aún no hay suficientes, significa que ya usamos todas: reiniciar todo
+            if (availablePhrases.length < count - selected.length) {
+                usedPhrases = [];
+                availablePhrases = shuffleArray([...phrases]);
+            }
+        }
+
+        const nextPhrase = availablePhrases.shift();
+        selected.push(nextPhrase);
+        usedPhrases.push(nextPhrase);
     }
 
-    const selected = availablePhrases.slice(0, count);
-    availablePhrases = availablePhrases.slice(count);
     return selected;
 }
+
 
 function generateBingo() {
     const squares = parseInt(document.getElementById('squares').value);
