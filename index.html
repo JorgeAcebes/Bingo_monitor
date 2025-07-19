@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -141,6 +142,17 @@
             box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
         }
 
+        .btn-warning {
+            background: linear-gradient(45deg, #ffa726, #ff7043);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 167, 38, 0.3);
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 167, 38, 0.4);
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -206,6 +218,38 @@
 
         .close:hover {
             color: #333;
+        }
+
+        .bulk-input-area {
+            margin-bottom: 20px;
+        }
+
+        .bulk-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .bulk-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .bulk-example {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #666;
+            border-left: 4px solid #667eea;
         }
 
         @media (max-width: 600px) {
@@ -284,8 +328,33 @@
             <button id="addPhraseBtn" class="button btn-success">
                 <span class="icon">➕</span> Añadir Frase
             </button>
+            <button id="addBulkBtn" class="button btn-warning">
+                <span class="icon">📝</span> Agregar muchas frases
+            </button>
             <button id="saveCloseBtn" class="button btn-primary">
                 <span class="icon">💾</span> Guardar y Cerrar
+            </button>
+        </div>
+    </div>
+
+    <div id="bulkModal" class="modal">
+        <div class="modal-content">
+            <span id="closeBulkBtn" class="close">&times;</span>
+            <h2>📝 Agregar Muchas Frases</h2>
+            <div class="bulk-input-area">
+                <div class="bulk-example">
+                    <strong>📋 Instrucciones:</strong><br>
+                    Escribe las frases entre comillas y separadas por comas.<br>
+                    <strong>Ejemplo:</strong> "sabe jugar al ajedrez", "ha viajado fuera de Europa", "le gusta la música clásica"
+                </div>
+                <textarea id="bulkTextarea" class="bulk-textarea" placeholder='Escribe aquí las frases entre comillas y separadas por comas, por ejemplo:
+"sabe jugar al ajedrez", "ha viajado fuera de Europa", "le gusta la música clásica", "tiene más de 20 años"'></textarea>
+            </div>
+            <button id="processBulkBtn" class="button btn-success">
+                <span class="icon">✅</span> Agregar Frases
+            </button>
+            <button id="cancelBulkBtn" class="button btn-secondary">
+                <span class="icon">❌</span> Cancelar
             </button>
         </div>
     </div>
@@ -365,10 +434,16 @@
         const editBtn        = document.getElementById('editBtn');
         const downloadBtn    = document.getElementById('downloadBtn');
         const addPhraseBtn   = document.getElementById('addPhraseBtn');
+        const addBulkBtn     = document.getElementById('addBulkBtn');
         const saveCloseBtn   = document.getElementById('saveCloseBtn');
         const closeModalBtn  = document.getElementById('closeModalBtn');
+        const closeBulkBtn   = document.getElementById('closeBulkBtn');
+        const processBulkBtn = document.getElementById('processBulkBtn');
+        const cancelBulkBtn  = document.getElementById('cancelBulkBtn');
         const modal          = document.getElementById('phrasesModal');
+        const bulkModal      = document.getElementById('bulkModal');
         const phrasesContainer = document.getElementById('phrasesContainer');
+        const bulkTextarea   = document.getElementById('bulkTextarea');
 
         function openModal() {
             loadPhrases();
@@ -376,6 +451,15 @@
         }
         function closeModal() {
             modal.style.display = 'none';
+        }
+
+        function openBulkModal() {
+            bulkModal.style.display = 'block';
+            bulkTextarea.value = '';
+            bulkTextarea.focus();
+        }
+        function closeBulkModal() {
+            bulkModal.style.display = 'none';
         }
 
         function loadPhrases() {
@@ -432,6 +516,47 @@
             row.append(input, del);
             phrasesContainer.append(row);
             input.focus();
+        }
+
+        function processBulkPhrases() {
+            const text = bulkTextarea.value.trim();
+            if (!text) {
+                alert('Por favor, escribe algunas frases antes de continuar.');
+                return;
+            }
+
+            try {
+                // Extraer frases entre comillas usando expresión regular
+                const matches = text.match(/"([^"]*)"/g);
+                if (!matches || matches.length === 0) {
+                    alert('No se encontraron frases entre comillas. Asegúrate de escribir las frases entre comillas y separadas por comas.\n\nEjemplo: "sabe jugar al ajedrez", "ha viajado fuera de Europa"');
+                    return;
+                }
+
+                // Limpiar las frases (quitar comillas y espacios extra)
+                const newPhrases = matches
+                    .map(match => match.slice(1, -1).trim()) // Quitar comillas
+                    .filter(phrase => phrase.length > 0);    // Filtrar frases vacías
+
+                if (newPhrases.length === 0) {
+                    alert('No se encontraron frases válidas. Asegúrate de que las frases no estén vacías.');
+                    return;
+                }
+
+                // Agregar las frases nuevas al array principal
+                phrases.push(...newPhrases);
+                
+                // Cerrar modal bulk y recargar el modal principal si está abierto
+                closeBulkModal();
+                if (modal.style.display === 'block') {
+                    loadPhrases();
+                }
+                
+                alert(`¡Perfecto! Se agregaron ${newPhrases.length} frases nuevas.`);
+                
+            } catch (error) {
+                alert('Hubo un error al procesar las frases. Verifica el formato e inténtalo de nuevo.');
+            }
         }
 
         function saveAndClose() {
@@ -568,9 +693,16 @@
         // Asignamos los event listeners
         editBtn.addEventListener('click', openModal);
         closeModalBtn.addEventListener('click', closeModal);
+        closeBulkBtn.addEventListener('click', closeBulkModal);
+        addBulkBtn.addEventListener('click', openBulkModal);
+        processBulkBtn.addEventListener('click', processBulkPhrases);
+        cancelBulkBtn.addEventListener('click', closeBulkModal);
+        
         window.addEventListener('click', e => {
             if (e.target === modal) closeModal();
+            if (e.target === bulkModal) closeBulkModal();
         });
+        
         addPhraseBtn.addEventListener('click', addPhrase);
         saveCloseBtn.addEventListener('click', saveAndClose);
         downloadBtn.addEventListener('click', generateBingo);
